@@ -27,18 +27,18 @@ for n in range(4):
 
     df=df.drop_duplicates(['time'], keep='first', inplace=False)    #找出time欄位中重複的資料並刪除，保留第一個出現的
     print(df[df.index.duplicated()])    #確認已無重複資料
-    df=df.resample('10L').mean() #resmaple,S秒,L毫秒
-    df=df.interpolate(method='time', limit_direction='both')    #內差法 method=(time,nearest,zero,slinear,quadratic,cubic)
+    df=df.resample('5L').mean() #resmaple,S秒,L毫秒
+    df=df.interpolate(method='quadratic', limit_direction='both')    #內差法 method=(time,nearest,zero,slinear,quadratic,cubic)
     df_all=pd.merge(df_all,df, left_index=True, right_index=True, how='outer')
 
-# df_all.to_csv('test.csv',index=False)
-# df_all=df.resample('S').mean() #resmaple,S秒,L毫秒
-# df_all=df.interpolate(method='time', limit_direction='both')    #內差法 method=(time,nearest,zero,slinear,quadratic,cubic)
+# print(df_all.shape[0])
+# print(df_all.shape[1])
 
-# x=df_all['time']
-# y=df_all['UE1_acc_x'],df_all['UE2_acc_x'],df_all['UE3_acc_x']
-# plt.plot(x,y,linewidth=0.5) 
-# df_all.plot(linewidth=0.5)
+#消除頭尾雜訊
+start=int(df_all.shape[0]*(10/100))
+end=int(df_all.shape[0]*(80/100))
+df_all=df_all[start:end]
+
 acc_x=df_all.plot(y='UE1_acc_x',linewidth=0.5)
 df_all.plot(ax=acc_x,y='UE2_acc_x',linewidth=0.5)
 df_all.plot(ax=acc_x,y='UE3_acc_x',linewidth=0.5)
@@ -57,3 +57,4 @@ df_all.plot(ax=acc_z,y='UE4_acc_z',linewidth=0.5)
 ax2=df_all.plot(linewidth=0.5)
 
 plt.show()
+
