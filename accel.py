@@ -1,9 +1,17 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.fftpack import fft,ifft
+import seaborn
+import math
 
-#UE1,UE2 in A；UE3,UE4 in B；UE4 in backpack
 
+#UE1&UE2 in A；UE3&UE4 in B；UE4 in backpack
+
+
+def autocorr(x):
+    result = np.correlate(x, x, mode='full')
+    return result[result.size // 2:]
 
 def accel_txt_to_csv(txt_name,csv_name,n):
     x="UE{UE}_acc_x".format(UE=n+1)
@@ -35,26 +43,61 @@ for n in range(4):
 # print(df_all.shape[1])
 
 #消除頭尾雜訊
+# total_rows = len(df.index)
+# df = df[int(total_rows * data_scale):-int(total_rows * data_scale)]
+
 start=int(df_all.shape[0]*(10/100))
 end=int(df_all.shape[0]*(80/100))
 df_all=df_all[start:end]
 
-acc_x=df_all.plot(y='UE1_acc_x',linewidth=0.5)
-df_all.plot(ax=acc_x,y='UE2_acc_x',linewidth=0.5)
-df_all.plot(ax=acc_x,y='UE3_acc_x',linewidth=0.5)
-df_all.plot(ax=acc_x,y='UE4_acc_x',linewidth=0.5)
+# acc_x=df_all.plot(y='UE1_acc_x',linewidth=0.5)
+# df_all.plot(ax=acc_x,y='UE2_acc_x',linewidth=0.5)
+# df_all.plot(ax=acc_x,y='UE3_acc_x',linewidth=0.5)
+# df_all.plot(ax=acc_x,y='UE4_acc_x',linewidth=0.5)
 
-acc_y=df_all.plot(y='UE1_acc_y',linewidth=0.5)
-df_all.plot(ax=acc_y,y='UE2_acc_y',linewidth=0.5)
-df_all.plot(ax=acc_y,y='UE3_acc_y',linewidth=0.5)
-df_all.plot(ax=acc_y,y='UE4_acc_y',linewidth=0.5)
+# acc_y=df_all.plot(y='UE1_acc_y',linewidth=0.5)
+# df_all.plot(ax=acc_y,y='UE2_acc_y',linewidth=0.5)
+# df_all.plot(ax=acc_y,y='UE3_acc_y',linewidth=0.5)
+# df_all.plot(ax=acc_y,y='UE4_acc_y',linewidth=0.5)
 
-acc_z=df_all.plot(y='UE1_acc_z',linewidth=0.5)
-df_all.plot(ax=acc_z,y='UE2_acc_z',linewidth=0.5)
-df_all.plot(ax=acc_z,y='UE3_acc_z',linewidth=0.5)
-df_all.plot(ax=acc_z,y='UE4_acc_z',linewidth=0.5)
+# acc_z=df_all.plot(y='UE1_acc_z',linewidth=0.5)
+# df_all.plot(ax=acc_z,y='UE2_acc_z',linewidth=0.5)
+# df_all.plot(ax=acc_z,y='UE3_acc_z',linewidth=0.5)
+# df_all.plot(ax=acc_z,y='UE4_acc_z',linewidth=0.5)
 
-ax2=df_all.plot(linewidth=0.5)
+# ax2=df_all.plot(linewidth=0.5)
+# plt.show()
 
+
+# fftResult = np.abs(np.fft.fft(signal)) 
+# fftResult_log = (np.log10(np.abs(np.fft.fft(signal))))*10
+# PSD=fftResult/len(signal)*5
+# PSD_log=(np.log10(PSD))*10
+# n = signal.size
+
+# freq = np.fft.fftfreq(n, d = 1)
+
+# # print(fftResult)
+# # print(freq)
+
+# plt.plot(1/freq[:int(len(fftResult)/2)]/len(signal),PSD_log[:int(len(fftResult)/2)],linewidth=0.5) 
+# # print(fftResult_log)
+# plt.show()
+
+df_all['UE1_acc_all']=(df_all['UE1_acc_x']**2+df_all['UE1_acc_y']**2+df_all['UE1_acc_z']**2)**0.5
+signal = np.array(autocorr(df_all['UE1_acc_x']))
+
+sampling_rate = len(signal)      #采样率
+fft_size = len(signal)      #FFT长度
+t = np.arange(0, 1.0, 1.0/sampling_rate)
+x = signal
+xs = x[:fft_size]
+xf = np.fft.rfft(xs) / fft_size  #返回fft_size/2+1 个频率  
+freqs = np.linspace(0, sampling_rate/2, fft_size/2+1) /len(signal)*2  #表示频率
+xfp = np.log10(np.abs(xf) * 2)*10    #db
+
+plt.plot(freqs , xfp)
+plt.xlabel(u"Hz", fontproperties='FangSong')
+plt.ylabel(u'db', fontproperties='FangSong')
+plt.subplots_adjust(hspace=0.4)
 plt.show()
-
